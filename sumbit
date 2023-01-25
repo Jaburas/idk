@@ -1,0 +1,552 @@
+""""
+Jana Aburas
+2023-01-12 - ???
+This program is based on a murder mystery / puzzel game.
+In this game you get to explore 6 locations which include a Main Hall, Library, Garden, Barn , Kitchen and a Basement. 
+You would have to explore these areas to find clues and talk to some NPCs who would tell you information on about the murder.
+In the start you would be introduced to potential suspects, and once you have solved who you belive the murderer is you would have to go back to the Main Hall and select who the Murderer is.
+"""
+
+# Imports
+import os
+from readchar import readchar
+import replit, sys, time
+
+# prefixes for the colors
+prefix = '\033['
+reset = f"{prefix}0m"
+blue = "34m"
+magenta = "35m"
+white = "37m"
+green = "33m"
+red = "31m"
+reset = "0m"
+style = 0
+# List for clues that help you solve the murder mystery and a list to be able to access the "inventory" which is objects you find.
+clues = []
+inventory = []
+
+
+#clear function
+def clear():
+  """This causes the screen to clear"""
+  os.system('clear')
+
+
+# this is the main hall function. This function is the starting area. From here the user would be able to go basically everywhere except the barn.
+#main hall function
+def MainHall():
+  """"
+  this represents the main hall.You will be able to go to all destination except the barn through the Main Hall.
+  """
+  print(
+    f"{prefix}{style}{red}You are at the Main Hall. The main hall is a large, room with high arched ceilings and stone pillars supporting it.The walls are covered with paintings depicting scenes of wars.\n"
+  )
+
+  print(
+    f"{prefix}{style}{magenta}Where would you like to go next? \n L) Library \n G) Garden \n B) Basement \n K) Kitchen \n E) choose who the murder is"
+  )
+  #allows the user to input a choice from the options that were given
+  place = input()
+  #while the place the user chose isnt part of the list tell the user that they can't go there and give them a chance to answer again
+  while place not in [
+      'L', 'l', 'G', 'g', 'B', 'b', 'K', 'k','E','e']:  #
+    print(f"{prefix}{style}{green} Guard: You are not allowed there!")
+    place = input()
+  #if the option is b call the basement function
+  if place == 'b':
+    place = Basement()
+  return place
+
+
+# This is the function for the library. At the library you are able either talk to the Librarian, explore the library, go to the garden and go back to the main hall.
+#library function
+def Library(foundItems):
+  print(
+    f"{prefix}{style}{blue}You are at the library.It looks old although well kept.\n"
+  )
+  print(
+    f"{prefix}{style}{magenta}What would you like to do? \n M) Go to the Main Hall \n S) Search Library \n L) Talk to the librarian \n G) Go to the garden"
+  )
+  place = input()
+  while place not in ['G', 'g', 'S', 's', 'l', 'L', 'M', 'm']:
+    print(f"{prefix}{style}{green}Librarian: You are not allowed there!")
+    place = input()
+  # if the input is s calls the searchlibrary function and lets you search the library
+  if place == 's':
+    place, foundItems = SearchLibrary(foundItems)
+  #if the user input was l, call the librarian function which is an npc that you can talk to
+  elif place == 'l':
+    place = Librarian()
+
+  return place, foundItems
+
+
+#This is the search library fucntion. this function allows the user to search the library and look for clues.
+def SearchLibrary(foundItems):
+  #if foundItems[0] hasnt been found already then the function prints ' you found a flashlight' and sets the founditems[0] to true.
+  if not foundItems[0]:
+    foundItems[0] = True
+    print(f"{prefix}{style}{red} You found a flashlight.")
+    inventory.append("Flashlight")
+  else:
+    print("there is nothing new in the library")
+  print(
+    f"{prefix}{style}{magenta}Where would you like to go next?  \n T) Talk to the librarian \n G) Go to the garden \n M) Go back to the Main hall")
+  place = input()
+  while place not in ['G', 'g', 'T', 't', 'M', 'm']:
+    print(f"{prefix}{style}{green}Librarian: You are not allowed there!")
+    place = input()
+  return place, foundItems
+
+
+# this is the garden function.
+#garden function
+def Garden(foundItems):
+  print(
+    f"{prefix}{style}{red}Your are at the Garden. It is full of many Fruits and vegetables. You can see a barn a bit further away."
+  )
+  print(
+    f"{prefix}{style}{magenta}What would you like to do here? \n B) go to the barn \n G) Talk to the Gardener  \n M) Main Hall \n K) Kitchen \n L) Library\n S) Search the garden"
+  )
+  place = input()
+  while place not in [
+      'G', 'g', 'M', 'm', 'K', 'k', 'L', 'l', 'b', 'B', 's', 'S']:
+    print(f"{prefix}{style}{green}That area is blocked!")
+    place = input()
+  if place == 'g':
+    place = Gardener()
+  elif place == 'b':
+    place = Barn()
+  elif place == 's':
+    place, foundItems = SearchGarden(foundItems)
+
+  return place, foundItems
+
+
+def SearchGarden(foundItems):
+  if not foundItems[2]:
+    foundItems[2] = True
+    print(
+      "You search the garden and see that something is shining under the dirt. Do you want to dig it up or ignore it?\n y\\n?"
+    )
+    choice = input()
+    if choice == 'y':
+      print(
+        "You decide to dig up the dirt using a shovel that you find nearby. Once you dig out the dirt you pick up the object and notice that it is a Bloody Knife. "
+      )
+      print("You put the knife insidea bag and place it in your pocket.")
+    else:
+      print("You decide that it isn't a good choice to dig up the dirt")
+  else:
+    print("You did not find anything new in the Garden.")
+  print(
+    "What would you like to do next?\n L) Library \n M) MainHall \n K) Kitchen"
+  )
+  place = input()
+  while place not in ['l', 'L', 'm', 'M', 'k', 'K', 'g', 'G']:
+    print("Gardener: You are not allowed there!")
+    place = input()
+  if place == 'g':
+    place = Gardener()
+  return place, foundItems
+
+
+#kitchen function
+def Kitchen(foundItems):
+  print(
+    f"{prefix}{style}{red}You are at the kitchen. It a big kitchen with long marble counters and many cabinets. An overy large white fridge sits at the corner of the Kitchen. There is nobody in the Kitchen, You are free to search the area as you please."
+  )
+  print(
+    f"{prefix}{style}{magenta}What would you like to do?\n M)  Go to the Main Hall \n G) Go to the Garden\n S) explore the Kitchen\n C) Talk to the chef"
+  )
+  place = input()
+  while place not in ['G', 'g', 'm', 'M', 'S', 's', 'C', 'c']:
+    print(f"{prefix}{style}{green}That area is blocked!")
+    place = input()
+  if place == 's':
+    place, foundItems = SearchKitchen(foundItems)
+  if place == 'c':
+    place == chef()
+
+  return place, foundItems
+
+
+#search kitchen function
+def SearchKitchen(foundItems):
+  if not foundItems[1]:
+    print(
+      f"{prefix}{style}{red}You found a key hidden behind a jar of cookies.")
+    foundItems[1] = True
+    inventory.append("Key")
+  print(
+    f"{prefix}{style}{magenta}Where would you like to go next?\n G) Garden\n M) Main Hall"
+  )
+  place = input()
+  while place not in ['G', 'g', 'm', 'M']:
+    print(f"{prefix}{style}{green}Can't go there yet!")
+    place = input()
+
+  return place, foundItems
+
+
+#basement function
+def Basement():
+  if foundItems[1] == True and foundItems[0] == True:
+    print(
+      f"{prefix}{style}{red}You put the key you found inside of the key hole. You twist the key and the basement door slowly opens. You turn on the flashlight to see in the dark. The light flickers for a few seconds and turns on."
+    )
+
+    print(
+      f"{prefix}{style}{red} You walk down the basement stairs. As you are walking down the basement stairs are making an audible squaking noise."
+    )
+    option = input()
+    print(
+      "what would you like to do at the basement? M) Main Hall\n S) Search the basement"
+    )
+    while option not in ['m', 'M', 's', 'S']:
+      print("You are not able to go there.")
+      option = input()
+    if option == 's':
+      print("You take a look around and don't see anything out of place.")
+
+  elif foundItems[1] == True and foundItems[0] == False:
+    print(
+      f"{prefix}{style}{red}You put the key you found inside of the key hole. You twist the key and the basement door slowly opens. It's too dark to see anything, you should comeback when you have a tool that lets you see in the dark."
+    )
+  elif foundItems[1] == False and foundItems[0] == False:
+    print(
+      f"{prefix}{style}{red}This is the basement door.You try and unlock the door but it won't budge. You should comeback once you have a key to be able to unlock the door."
+    )
+  else:
+     print(f"{prefix}{style}{red}You try and unlock the door but it won't budge. You should comeback once you have a key to be able to unlock the door.")
+       
+    
+
+  place = input()
+
+  while place not in ['m''M']:
+    print(f"{prefix}{style}{green}Can't go there yet!")
+    place = input()
+
+  return place
+
+
+#barn function
+def Barn():
+  print(
+    f"{prefix}{style}{red}The barn is located on a secluded area that can only be acessed through the garden, hidden in a clearing surrounded by tall, ancient trees. The barn itself is a wooden structure with a slightly broken roof and large doors that are currently open, revealing the cow that currently resides inside. The wooden walls are covered with moss and ivy, giving it a charming but run-down appearance."
+  )
+  print(
+    f"{prefix}{style}{magenta}What would you like to do next? \n G) Go to the garden \n P) Pet the cow \n F) Talk to the farmer"
+  )
+  place = input()
+  while place not in ['G', 'g', 'P', 'p', 'f', 'F']:
+    print(f"{prefix}{style}{green}There are animals in the way!")
+    place = input()
+  if place == 'f':
+    place = farmer()
+  return place
+
+
+#chef npc function
+def chef():
+  print(
+    f"{prefix}{style}{green}Chef: Hello There! \n Welcome to the kitchen, my name is Chef Pierre and I am the head chef here. I've been cooking for over 35 years and have trained at some of the most prestigious culinary schools in the world. My apologies that you came here on bad news, I was very sad when I heard that the King was dead, he has always treated me with kindness."
+  )
+  clues.append("The chef has been working at the castle for over 35 years.")
+  print(
+    f"{prefix}{reset}You: It is nice to meet you Chef Pierre I have a few question if you would be kind enough to answer. "
+  )
+  print(
+    f"{prefix}{style}{green}Chef: Of Course! I don't mind answering a few of your questions!"
+  )
+  option = 0
+  while option != '4':
+    print(
+      f"{prefix}{style}{magenta}What would you like to ask?\n 1) Where were you at the time of the murder?\n 2) Do you know if the King has any known enemies?\n 3) Were you fond of the king? \n 4) Nevermind."
+    )
+
+    option = input()
+    while option not in ['1', '2', '3', '4']:
+      print(
+        f"{prefix}{style}{green}Chef: Sorry!, I did not understand what you said! Can you please repeat that again?"
+      )
+      option = input()
+    if option == '1':
+      print(
+        f"{prefix}{reset}You: Can you tell me where you were at the time of the murder?"
+      )
+      print(
+        f"{prefix}{style}{green}Chef: Of Course! At the time of the murder I was inside the kitchen preparing dinner. Untill I heard a scream from the main hall, I ran as fast as I could to see what the commotion was and I seen the saddest sight. It was Monsieur Thomas's dead body on the ground. Oh! Who could do such a thing!"
+      )
+      clues.append("The Chef was making dinner at the time.")
+      clues.append("The body was found at the Mainhall")
+
+    elif option == '2':
+      print(
+        f"{prefix}{reset}You: Can you tell me if the king has had any enemies?"
+      )
+      print(
+        f"{prefix}{style}{green} Chef: Hmmm. I'm not sure if I should tell you this, but the farmer has always voiced his disapproval for the kings actions. I for one, find Monsieur Thomas an excelent man who has done no wrong."
+      )
+    elif option == '3':
+      print("Were you fond of the King?")
+      print(
+        "Chef: Yes! I am very fond of the king. My family has worked for this castle for generations and we have always enjoyed it. Monsieur Thomas has always treated us with genuine kindness and has always put our needs before his!. I will miss him deeply."
+      )
+      clues.append("The chef likes the the king")
+    else:
+      print(f"{prefix}{reset} You: Nevermind")
+      print(
+        f"{prefix}{style}{magenta}What would you like to do next? \n G) Garden \n K) Kitchen\n M) MainHall"
+      )
+
+      place = input()
+      while place not in ['M', 'm', 'K', 'k', 'g', 'G','e','E']:
+        print(f"{prefix}{style}{red}Can't go there yet!")
+        place = input()
+
+  return place
+
+
+#farmer npc function
+def farmer():
+  print(f"{prefix}{style}{red}Hello.")
+  print(f"{prefix}{reset}You: Hello there! May I ask you a few questions?")
+  print(
+    f"{prefix}{style}{green}Farmer:Of Course! what would you like to know?")
+  while True:
+    print(
+      f"{prefix}{style}{magenta}What would you like to ask the farmer? \n 1) Where were you at the time of the murder? \n 2) Does the king have any enemies? \n 3) Were you fond of the King \n 4) Nevermind"
+    )
+
+    option = input()
+
+    if option == '1':
+      clear()
+      print(f"{prefix}{reset}You:Were where you at the time of the murder?")
+      print(
+        f"{prefix}{style}{green}Farmer: At the time of the murder I was walking back from the MainHall to the Barn. I had just finished a civil discussion with the King on the reason why the Barn still hasn't been fixed. I stopped by the library to search for a book I was interested in, as I picked up a book I heard a horrifying scream come from the MainHall, so I headed there along with the Librarian and we found the body of the King."
+      )
+      clues.append("\nThe Farmer was at the Library during the murder")
+      clues.append(
+        "\nThe Farmer and Librarian went to the murder scene together")
+    elif option == '2':
+      clear()
+      print(f"{prefix}{reset}You: Do you know if the King has any enemies? ")
+      print(
+        f"{prefix}{style}{green}Farmer: Hmmm. Does the King have any Enemies? Yes I believe he does. During his time as King, he was not known as a 'good guy'"
+      )
+      clues.append("\nThe king is disliked")
+
+    elif option == '3':
+      clear()
+      print(f"{prefix}{reset}You: Did you like the king?")
+      print(
+        f"{prefix}{style}{green}Farmer: It is no secret that I dislike the King. The king has no care for the people. The only things inside his head is food and gold. Although, I do not dislike him enough for me to go and murder him, Murder is an act that you can't take back."
+      )
+      clues.append("\nThe farmer disliked the King")
+    else:
+      print(f"{prefix}{reset} You: Nevermind")
+      print(
+        f"{prefix}{style}{magenta}What would you like to do next? \n G) Go to the garden \n P) Pet the cow"
+      )
+
+      place = input()
+      while place not in ['G', 'g', 'P', 'p']:
+        print(f"{prefix}{style}{red}Can't go there yet!")
+        place = input()
+
+      if place == 'p':
+        place = PetCow()
+      break
+
+  return place
+
+
+#pet the cow function
+def PetCow():
+  print(f"{prefix}{style}{red}You pet the cow! :)")
+  print(
+    f"{prefix}{style}{magenta}Where would you like to go next?\n G) Garden\n F) Talk to the Farmer"
+  )
+  place = input()
+  while place not in ['G', 'g', 'f', 'F']:
+    print(f"{prefix}{style}{red}Can't go there yet!")
+    place = input()
+
+  return place
+
+
+#Main
+
+
+#this is for the librarian npc
+def Librarian():
+  print("Hello.")
+  print(
+    f"{prefix}{style}{green}I am the librarian. I've been working here for a long time, a total of 20 years"
+  )
+  option = 0
+  while option != '4':
+    print(
+      f"{prefix}{style}{magenta}What would you like to ask?\n 1) Where were you at the time of the murder?\n 2) Do you know if the King has any known enemies?\n 3) Were you fond of the king? \n 4) Nevermind."
+    )
+    option = input()
+    while option not in ['1', '2', '3', '4']:
+      print(
+        f"{prefix}{style}{green}Librarian: Sorry!, I did not understand what you said! Can you please repeat that again?"
+      )
+      option = input()
+    if option == '1':
+      print(
+        f"{prefix}{reset}You: Can you tell me where you were at the time of the murder?"
+      )
+      print(
+        f"{prefix}{style}{green}Librarian: At the time of the Murder I was cleaning up the library. Once I finished cleaning the farmer came in looking for a book so I helped him, but then we heard a scream come from the Main Hall so we headed in that direction to find the Kings dead body and nobody around"
+      )
+
+    elif option == '2':
+      print(
+        f"{prefix}{reset}You: Can you tell me if the king has had any enemies?"
+      )
+      print(
+        f"{prefix}{style}{green} Librarian: The king was a ruthless leader who had the kingdom's people live in fear. The king was a tyrant who would use any means necessary to increase his fortune and expand his land. His relations with the other leaders weren't good either, I believe that there were many people who were happy that the king had passed away."
+      )
+      clues.append("Many people were happy that the king passed away")
+      clues.append("The king only wanted money and control over the people")
+    elif option == '3':
+      print("You: Were you fond of the King?")
+      print(
+        "Librarian: I don't have strong feelings one way or the other about the king, but I do wish that he would have spent more money on the library and promoted knowledge throughtout the kingdom."
+      )
+      clues.append(
+        "The Librarian does not have any strong feelings towards the king.")
+      clues.append("The king did not value knowledge")
+      clues.append(
+        "The farmer wished that the king spent more money on the library")
+
+    else:
+      print(f"{prefix}{reset} You: Nevermind")
+      print(
+        f"{prefix}{style}{magenta}What would you like to do next? \n G) Garden \n S) Search the Library \n M) MainHall"
+      )
+
+      place = input()
+      while place not in ['M', 'm', 'S', 's', 'g', 'G']:
+        print(
+          f"{prefix}{style}{red}Librarian: Sorry! You are not allowed there!")
+        place = input()
+      if place == 's':
+        place = SearchLibrary(foundItems)
+
+  return place
+
+
+def Gardener():
+  print(
+    f"{prefix}{style}{green}The gardener is a middle-aged man with sun-weathered skin and calloused hands. He is of medium height and build, with a friendly, open face. "
+  )
+  print(
+    f"{prefix}{style}{green}Hello, my name is John, I am the gardener here. I have been taking care of this garden for many years now. I love nothing more than working with nature and seeing the fruits of my labor come to life"
+  )
+  option = 0
+  while option != '4':
+    print(
+      f"{prefix}{style}{magenta}What would you like to ask?\n 1) Where were you at the time of the murder?\n 2) Do you know if the King has any known enemies?\n 3) Were you fond of the king? \n 4) Nevermind."
+    )
+    option = input()
+    while option not in ['1', '2', '3', '4']:
+      print(
+        f"{prefix}{style}{green}Gardener: Sorry!, I did not understand what you said! Can you please repeat that again?"
+      )
+      option = input()
+    if option == '1':
+      print(
+        f"{prefix}{reset}You: Can you tell me where you were at the time of the murder?"
+      )
+      print(
+        f"{prefix}{style}{green}Gardener: At the time of the Murder I had just finished tending the garden and was about to go inside and get cleaned up. As I was walking through the halls, I heard a loud commotion in the MainHall. When I went to check it out, I seen that the main door for the hall was left wide open and that there were people in a crowd, walking close I noticed that it was the kings dead body! Could you beilve that? Someone had the guts to kill our king, someone who we all appreciated!. Sorry for my rambling, I am stil distraught from the event."
+      )
+
+    elif option == '2':
+      print(
+        f"{prefix}{reset}You: Can you tell me if the king has had any enemies?"
+      )
+      print(
+        f"{prefix}{style}{green} Gardener: The king was a hated leader who only wanted the best for the kingdom. The king was a fair ruler, sad that there aren't many people who understand this."
+      )
+
+      clues.append("The gardener belives that the king was wrongfully hated.")
+    elif option == '3':
+      print("You: Were you fond of the King?")
+      print(
+        "Gardener: He was a kind and generous person, always taking interest in the well-being of his kingdom and his people, and that included the beauty of his kingdom. He had a true appreciation for nature, and it was a pleasure to work on the garden under his rule. I miss him dearly."
+      )
+      clues.append("The gardener likes the king.")
+      clues.append("The king liked his castle to be beautiful")
+    else:
+      print(f"{prefix}{reset} You: Nevermind")
+      print(
+        f"{prefix}{style}{magenta}What would you like to do next? \n G) Garden \n S) Search the garden\n M) MainHall"
+      )
+
+      place = input()
+      while place not in ['M', 'm', 'S', 's', 'g', 'G']:
+        print(
+          f"{prefix}{style}{red}There is a tree that blocks you from going there."
+        )
+        place = input()
+
+  return place
+
+
+
+def Endingchoice():
+  print(
+    f"{prefix}{style}{green}You've reached the final stage of your investigation. You've collected a pile of evidence, questioned suspects, and pieced together the mystery. It is now time to make your final decision. Who do you think is the murderer? Take a minute to go over the suspects and motives, as well as all of the evidence you've gathered. Remember that this is a significant decision, so use your best judgment. Are you prepared to make your decision?")
+
+  print(
+    f"{prefix}{reset}The suspects who you have investigated in this game are the Chef, Gardener, Librarian and Farmer. Who do you believe is the killer? \n C) Chef \n L) Librarian \n G) Gardener\n F) Farmer ")
+  
+  option = input()
+  while option not in ['g', 'G', 'c', 'C','z','Z','L','l','F','f']:
+      print(
+        f"{prefix}{style}{green}Sorry, I don't think that person is a suspect in this murder case."
+      )
+      option = input()
+      if option == 'g':
+        print(f"{prefix}{reset} That is correct! The Murder is the Gardener. The people in the kingdom are happy that you were able to solve the murder mystery. Good Job!")
+      else:
+         print(
+        f"{prefix}{reset}Sorry! That is incorrect the murderer was the Gardener!")
+
+
+
+
+#MAIN 
+print(
+  f"{prefix}{style}{blue}Welcome to the castle of Ravenswood, where a gruesome murder has recently taken place. On the night of January 15th, The king , Thomas Katz, was found dead in the mainhall of his castle. The police are investigating and they have identified three supsects. The chef, Librarian and Gardener are the main suspects. The case is now in your hands as the best detective in the country. Can you solve the murder and find the killer? \n")
+print("You can make your final decision on who the suspect is by pressing e when you are in the main hall. ")
+rc = readchar()
+time.sleep(1) 
+clear()
+
+
+choice = 'm'
+foundItems = [False, False, False]
+
+while choice != 'x':
+  if choice == 'm':
+    choice = MainHall()
+  elif choice == 'l':
+    choice, foundItems = Library(foundItems)
+  elif choice == 'g':
+    choice, foundItems = Garden(foundItems)
+  elif choice == 'k':
+    choice, foundItems = Kitchen(foundItems)
+  elif choice == 'e':
+    choice = Endingchoice()
+  clear()
+print("Thanks For Playing")
